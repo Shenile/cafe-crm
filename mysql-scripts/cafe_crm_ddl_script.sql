@@ -1,6 +1,6 @@
 
 CREATE DATABASE cafe_crm;
-use cafe_crm;
+USE cafe_crm;
 
 -- ----------------- CUSTOMER ------------------
 
@@ -25,11 +25,12 @@ CREATE TABLE menu_categories (
 
 CREATE TABLE menu_items (
     item_id INT PRIMARY KEY AUTO_INCREMENT,
-    item_name VARCHAR(256) NOT NULL,
+    item_name VARCHAR(256) NOT NULL UNIQUE,
     category_id INT NOT NULL,
     item_price DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (category_id) REFERENCES menu_categories(category_id) ON DELETE CASCADE
 );
+
 
 -- -------------------------------------------
 
@@ -55,11 +56,11 @@ CREATE TABLE discounts (
 
 CREATE TABLE orders (
     order_id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT NOT NULL,
-    order_status ENUM('placed', 'completed', 'cancelled') DEFAULT 'placed',
+    customer_id INT DEFAULT NULL,
+    order_status ENUM('new', 'preparing', 'completed', 'cancelled') DEFAULT 'new',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE SET NULL
 );
 
 
@@ -77,28 +78,28 @@ CREATE TABLE order_payments (
     payment_id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
     payment_type ENUM('cash', 'card', 'upi', 'paypal') DEFAULT 'cash',
-    payment_status ENUM('pending', 'partially_paid', 'paid', 'failed') DEFAULT 'pending',
     amount_paid DECIMAL(10,2) NOT NULL DEFAULT 0.0,
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
 );
 
 
-CREATE TABLE order_bill (
+CREATE TABLE order_bills (
     order_id INT PRIMARY KEY,
     total_price DECIMAL(10,2) NOT NULL DEFAULT 0.0,
     discount_applied DECIMAL(10,2) NOT NULL DEFAULT 0.0,
     final_price DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    payment_status ENUM('pending', 'partially_paid', 'paid', 'failed') DEFAULT 'pending',
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
 );
 
 CREATE TABLE order_discounts (
+	order_discount_id INT PRIMARY KEY AUTO_INCREMENT, 
     order_id INT NOT NULL,
-    discount_id INT NOT NULL,
-    loyalty_points_used INT NULL CHECK (loyalty_points_used >= 0),
+    discount_id INT DEFAULT NULL,
+    loyalty_points_used INT DEFAULT 0 CHECK (loyalty_points_used >= 0),
     discount_amount DECIMAL(10,2) NOT NULL,
-    PRIMARY KEY (order_id, discount_id),
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
-    FOREIGN KEY (discount_id) REFERENCES discounts(discount_id) ON DELETE CASCADE
+    FOREIGN KEY (discount_id) REFERENCES discounts(discount_id) ON DELETE SET NULL
 );
 
 -- --------------------------------------------
@@ -121,7 +122,7 @@ CREATE TABLE loyalty_program(
     FOREIGN KEY (tier_id) REFERENCES loyalty_tiers(tier_id) ON DELETE CASCADE
 );
 
-CREATE TABLE loyalty_points_log(
+CREATE TABLE loyalty_points_logs(
     log_id INT PRIMARY KEY AUTO_INCREMENT,
     customer_id INT NOT NULL,
     order_id INT NULL,
@@ -142,7 +143,7 @@ CREATE TABLE review_categories (
     category_name VARCHAR(30) NOT NULL
 );
 
-CREATE TABLE customer_feedbacks (
+CREATE TABLE feedbacks (
     feedback_id INT PRIMARY KEY AUTO_INCREMENT,
     customer_id INT NULL,
     order_id INT NULL,
@@ -158,7 +159,7 @@ CREATE TABLE customer_feedbacks (
 );
 
 
-CREATE TABLE customer_complaints (
+CREATE TABLE complaints (
     complaint_id INT PRIMARY KEY AUTO_INCREMENT,
     customer_id INT NULL,
     order_id INT NULL,

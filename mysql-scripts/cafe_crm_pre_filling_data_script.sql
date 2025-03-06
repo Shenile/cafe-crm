@@ -51,7 +51,10 @@ INSERT INTO discount_types(type_name) VALUES
 INSERT INTO discounts (discount_name, type_id, discount_value, min_order_value, is_active) 
 VALUES
 ('10 % offer on First Order', 2, 10, 0, true),
-('20% offer on first hundreds', 2, 20, 99, true);
+('20% offer on hundreds', 2, 20, 99, true),
+('30% offer on five-hundred', 2, 30, 499, true),
+('100rs cashback for thousands', 1, 100, 999, true); 
+
 
 INSERT INTO loyalty_tiers(tier_name, min_points, max_points) VALUES
 ('bronze', 0, 250),
