@@ -316,6 +316,26 @@ END;
 //
 DELIMITER ;
 
+DELIMITER //
+CREATE PROCEDURE GetTotalRevenueByMenuCategory()
+BEGIN
+	SELECT c.category_name, sum(res.total_revenue) as total_revenue
+	FROM menu_categories AS c
+	INNER JOIN (
+		SELECT mi.item_id,mi.category_id, sum(oi.quantity)*mi.item_price as total_revenue
+		FROM menu_items AS mi
+		INNER JOIN menu_categories AS mc
+		ON mi.category_id = mc.category_id
+		INNER JOIN order_items as oi
+		ON mi.item_id = oi.item_id
+		GROUP BY mi.item_id, mi.category_id
+        ) AS res
+	ON c.category_id = res.category_id
+	GROUP BY c.category_id;
+END;
+// 
+DELIMITER ;
+
 
 CALL GetCustomerOrderCounts();
 CALL GetTopSpendingCustomers(10);
@@ -327,4 +347,5 @@ CALL GetMostOrderedMenuItems();
 CALL GetComplaintCategoryCounts();
 CALL GetMenuItemAverageRatings();
 CALL GetFrequentCustomers(2);
+CALL GetTotalRevenueByMenuCategory();
 
